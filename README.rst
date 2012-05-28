@@ -3,12 +3,13 @@ Railscape
 
 Helping migrating data from Rails to Django
 -------------------------------------------
+... one little schema file at the time.
 
 Usage
 -----
     * Clone the project
     * python railscape.py -f name_of_schema.rb
-    * A models.py file should now be created in the same directory as railscape.python
+    * A models.py file should now be created in the same directory as railscape.py
 
 Note
 ----
