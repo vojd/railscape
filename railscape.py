@@ -7,12 +7,10 @@ import pprint
 
 
 def create_model(modelname):
-    print "creating model", modelname
+    print "Creating model", modelname
     return {'model' : modelname, 'fields' : [] }
 
 def add_model_fields(models, line, current_model):
-    print "adding fields to ", current_model
-    #models[current_model].update({'field': parse_line(line)})
     models[current_model]['fields'].append({'field' : parse_line(line)})
 
 def parse_line(line):
@@ -31,38 +29,49 @@ def parse_line(line):
     return options[line[0]](line[1].replace(',',''), extra_args(line))
 
 def extra_args(args):
-    print 'extra args', args
+    print "extra args", args
     if len(args) > 2:
         # we have more args to take care of
         # extra args comes in the form :key => 'value'
         # therefor we can assume they come in chunks of 3 (three) items
 
         # remove non wanted elements such as simple commas and empty strings
-        for a in args:
-            if a in [",", ""]:
-                args.remove(a)
+        #for a in args:
+        #    if a in [",", ""]:
+        #        print "removing", a
+        #        args.remove(a)
+        #        print "args after remove", args
         # remove the two first items from the list
-        args = args[2:-1]
+        args = args[1:-1]
         # make sure we have a list consisting of three's (multiples of 3)
+        print "len", len(args), args
         if len(args) % 3 == 0:
-            for k, a, v in args:
-                print k, a, v
+            k = a = v = ''
+            for i in range(len(args), 3):
+
+                k = args[0+i]
+                a = args[1+i]
+                v = args[2+i]
+                print ">>", k, a, v
                 # TODO: Implement the extra args here
 
     return None
 
+def xa(a):
+    return '' if a is None else a
+
 def int_field(n, args=None):
-    return '%s = fields.IntegerField(verbose_name="%s")' % (n , n)
+    return '%s = models.IntegerField(verbose_name="%s", %s)' % (n , n, xa(args))
 def string_field(n, args=None):
-    return '%s = fields.CharField(verbose_name="%s", max_length=255)' % (n , n)
+    return '%s = models.CharField(verbose_name="%s", max_length=255, %s)' % (n , n, xa(args))
 def text_field(n, args=None):
-    return '%s = fields.TextField(verbose_name="%s")' % (n , n)
+    return '%s = models.TextField(verbose_name="%s", %s)' % (n , n, xa(args))
 def datetime_field(n, args=None):
-    return '%s = fields.CharField(verbose_name="%s", max_length=255)' % (n , n)
+    return '%s = models.CharField(verbose_name="%s", max_length=255, %s)' % (n , n, xa(args))
 def date_field(n, args=None):
-    return '%s = fields.DateField(verbose_name="%s")' % (n , n)
+    return '%s = models.DateField(verbose_name="%s", %s)' % (n , n, xa(args))
 def bool_field(n, args=None):
-    return '%s = fields.BooleanField(verbose_name="%s")' % (n , n)
+    return '%s = models.BooleanField(verbose_name="%s", %s)' % (n , n, xa(args))
 
 
 def convert(filename=None):
@@ -75,7 +84,6 @@ def convert(filename=None):
         #print "I/O error({0}): {1}".format(errno, strerror)
         print "Could not open requested file", filename
         raise
-
 
     modelname = ''
     old_modelname = ''
@@ -94,7 +102,6 @@ def convert(filename=None):
         # handle comments
         if "#" in line:
             line, comment = line.split("#", 1) #TODO: this breaks hash tags in strings
-            print comment
 
         if line.startswith("create_table"):
             # start of model
@@ -121,10 +128,10 @@ def build_django_models_file(models):
 
     f = open("models.py", "w");
 
-    top_text = "-*- coding:utf-8 -*-\n__author__=railscape\nfrom django.db import models\n\n"
+    top_text = "#-*- coding:utf-8 -*-\n__author__='Railscape'\nfrom django.db import models\n\n"
     f.write(top_text)
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(models)
+    #pp = pprint.PrettyPrinter(indent=2)
+    #pp.pprint(models)
 
     for model in models:
 
@@ -133,7 +140,6 @@ def build_django_models_file(models):
         f.write(model_class_text)
 
         for field in model['fields']:
-            print field
             field_text = "    %s\n" % field['field']
             f.write(field_text)
         # and after this class we want some spaces inserted
@@ -154,6 +160,5 @@ if __name__ == "__main__":
         models = convert(options.filename)
     else:
         models = convert()
-
 
     build_django_models_file(models)
